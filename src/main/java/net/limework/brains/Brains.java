@@ -1,5 +1,6 @@
 package net.limework.brains;
 
+import com.imaginarycode.minecraft.redisbungee.AbstractRedisBungeeAPI;
 import net.limework.brains.redisbungee.RedisBungeeHook;
 import net.limework.brains.redisbungee.RedisClearTask;
 import org.apache.logging.log4j.LogManager;
@@ -87,6 +88,7 @@ public class Brains {
             logger.info("=======[ Help page ]=======");
             logger.info("1. \"help\": prints this page");
             logger.info("2. \"shutdown\", \"stop\": shutdown Brains.");
+            logger.info("3, \"forcecleanuuid\": forces the uuid clean up. node it wont reset the timer.");
         }
         private final List<String> shutdownArgs = Arrays.asList("shutdown", "stop");
         @Override
@@ -99,6 +101,8 @@ public class Brains {
                     scanner.close();
                     brains.shutdown(null);
                     break;
+                } else if (args[0].equalsIgnoreCase("forcecleanuuid")) {
+                    new RedisClearTask(brains.hook).execute();
                 } else {
                     logger.info("Unknown command, type \"help\" for the help page.");
                 }
