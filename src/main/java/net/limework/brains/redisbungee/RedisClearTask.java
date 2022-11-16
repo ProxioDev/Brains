@@ -23,7 +23,6 @@ public class RedisClearTask extends RedisTask<Void> {
     // this code is inspired from https://github.com/minecrafter/redisbungeeclean
     @Override
     public Void unifiedJedisTask(UnifiedJedis unifiedJedis) {
-        Thread.currentThread().setName("RedisBungee-UUIDCache-Cleaner");
         logger.info("==========[ Cached UUID entries cleanup ]==========");
         logger.info("Starting UUID cleaner.....");
         logger.info("fetching uuid cache...");
