@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -32,8 +33,14 @@ public class Brains {
         hook.logInfo(hook.getCurrentProxiesIds(false).size() + " proxies were found");
         hook.logInfo("==========[ RedisBungee Stats ]==========");
     }
+
+    void initRepeatableCleanTask() {
+        // RIGHT NOW hard code the time/timeunit.
+        scheduledExecutorService.scheduleAtFixedRate(new RedisClearTask(hook), 1,  1, TimeUnit.DAYS);
+    }
+
     void start() {
-        logger.info("Starting Brains By Limework.net");
+        logger.info("Starting RedisBungee Brains By Limework.net");
         try {
             redisHookStart();
             printRedisBungeeNetworkStats();
@@ -41,9 +48,8 @@ public class Brains {
             shutdown(e);
             return;
         }
-        scheduledExecutorService.scheduleAtFixedRate(new RedisClearTask(hook), 0L,  10L, TimeUnit.SECONDS);
         logger.info("Brains started successfully!");
-
+        initRepeatableCleanTask();
     }
 
     void shutdown(Throwable e) {
@@ -51,9 +57,11 @@ public class Brains {
             logger.fatal("Failed to start Brains", e);
         }
         logger.info("stopping brains...");
+        hook.logInfo("Shutting down RedisBungee hook....");
         hook.stop();
+        logger.info("Shutting down execution service.....");
         scheduledExecutorService.shutdown();
-
+        logger.info("Goodbye! :)");
     }
 
 

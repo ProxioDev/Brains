@@ -9,6 +9,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.UnifiedJedis;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 public class RedisClearTask extends RedisTask<Void> {
     private final Logger logger = LogManager.getLogger(this.getClass());
@@ -18,18 +20,26 @@ public class RedisClearTask extends RedisTask<Void> {
         super(plugin);
     }
 
+    // this code is inspired from https://github.com/minecrafter/redisbungeeclean
     @Override
     public Void unifiedJedisTask(UnifiedJedis unifiedJedis) {
         Thread.currentThread().setName("RedisBungee-UUIDCache-Cleaner");
         logger.info("==========[ Cached UUID entries cleanup ]==========");
         logger.info("Starting UUID cleaner.....");
         logger.info("fetching uuid cache...");
-        Map<String, String> uuidCache = unifiedJedis.hgetAll("uuid-cache");
-        logger.info("Found {} entries", uuidCache.size());
-        logger.info("converting......");
-        uuidCache.forEach((key, data) -> {
+        final long number = unifiedJedis.hlen("uuid-cache");
+        logger.info("Found {} entries", number);
+        ArrayList<String> fieldsToRemove = new ArrayList<>();
+        unifiedJedis.hgetAll("uuid-cache").forEach((field, data) -> {
             CachedUUIDEntry cachedUUIDEntry = gson.fromJson(data, CachedUUIDEntry.class);
+            if (cachedUUIDEntry.expired()) {
+                fieldsToRemove.add(field);
+            }
         });
+        if (!fieldsToRemove.isEmpty()) {
+            unifiedJedis.hdel("uuid-cache", fieldsToRemove.toArray(new String[0]));
+        }
+        logger.info("deleted {} entries", fieldsToRemove.size());
         logger.info("==========[ Cached UUID entries cleanup ]==========");
         return null;
     }
