@@ -3,6 +3,8 @@
 .project
 .settings
 
+#
+run
 # random files
 .png
 .jpg
