@@ -1,6 +1,7 @@
 package net.limework.brains;
 
 import com.imaginarycode.minecraft.redisbungee.AbstractRedisBungeeAPI;
+import io.prometheus.client.exporter.HTTPServer;
 import net.limework.brains.redisbungee.RedisBungeeHook;
 import net.limework.brains.redisbungee.RedisClearTask;
 import org.apache.logging.log4j.LogManager;
@@ -20,8 +21,9 @@ public class Brains {
     private final Logger logger = LogManager.getLogger(this.getClass());
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
-
     private final Console console = new Console(this);
+
+    private HTTPServer httpServer;
 
     void redisHookStart() {
         hook.logInfo("loading RedisBungee hook.....");
@@ -31,6 +33,7 @@ public class Brains {
         hook.logInfo("==========[ RedisBungee hook ]==========");
         hook.logInfo("RedisBungee hook load was successful");
     }
+
     void printRedisBungeeNetworkStats() {
         hook.logInfo("==========[ RedisBungee Stats ]==========");
         hook.logInfo(hook.getCount() + " players online.");
@@ -40,7 +43,7 @@ public class Brains {
 
     void initRepeatableCleanTask() {
         // RIGHT NOW hard code the time/timeunit.
-        scheduledExecutorService.scheduleAtFixedRate(new RedisClearTask(hook), 1,  1, TimeUnit.DAYS);
+        scheduledExecutorService.scheduleAtFixedRate(new RedisClearTask(hook), 1, 1, TimeUnit.DAYS);
     }
 
     void start() {
@@ -48,12 +51,13 @@ public class Brains {
         try {
             redisHookStart();
             printRedisBungeeNetworkStats();
+            initRepeatableCleanTask();
+            httpServer = new HTTPServer("localhost", 8000);
         } catch (Throwable e) {
             shutdown(e);
             return;
         }
         logger.info("Brains started successfully!");
-        initRepeatableCleanTask();
         initConsoleCommands();
     }
 
@@ -62,6 +66,10 @@ public class Brains {
             logger.fatal("Failed to start Brains", e);
         }
         logger.info("stopping brains...");
+        logger.info("stopping exporter....");
+        if (this.httpServer != null) {
+            this.httpServer.close();
+        }
         hook.logInfo("Shutting down RedisBungee hook....");
         hook.stop();
         logger.info("Shutting down execution service.....");
@@ -73,7 +81,7 @@ public class Brains {
         scheduledExecutorService.submit(console);
     }
 
-    private static class Console implements Runnable{
+    private static class Console implements Runnable {
         private final Logger logger = LogManager.getLogger(this.getClass());
         private final Scanner scanner = new Scanner(System.in);
         // This very basic / buggy console handling.
@@ -90,7 +98,9 @@ public class Brains {
             logger.info("2. \"shutdown\", \"stop\": shutdown Brains.");
             logger.info("3, \"forcecleanuuid\": forces the uuid clean up. node it wont reset the timer.");
         }
+
         private final List<String> shutdownArgs = Arrays.asList("shutdown", "stop");
+
         @Override
         public void run() {
             while (scanner.hasNext()) {
