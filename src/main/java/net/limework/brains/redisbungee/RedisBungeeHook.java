@@ -37,7 +37,7 @@ public class RedisBungeeHook implements RedisBungeePlugin<RedisPlayer>, ConfigLo
 
     private AbstractRedisBungeeAPI redisBungeeAPI;
     private final AbstractDataManager<RedisPlayer, ?, ?, ?> dataManager = new DataManager(this);
-    private final Path dataFolder = Path.of("");
+    private final Path dataFolder = Path.of("redisbungee-config");
     private Summoner<?> summoner;
     private RedisBungeeMode redisBungeeMode;
     private final OkHttpClient httpClient;
