@@ -1,7 +1,7 @@
 package net.limework.brains;
 
-import com.imaginarycode.minecraft.redisbungee.AbstractRedisBungeeAPI;
 import io.prometheus.client.exporter.HTTPServer;
+import net.limework.brains.prometheus.RedisBungeeCollector;
 import net.limework.brains.redisbungee.RedisBungeeHook;
 import net.limework.brains.redisbungee.RedisClearTask;
 import org.apache.logging.log4j.LogManager;
@@ -46,13 +46,19 @@ public class Brains {
         scheduledExecutorService.scheduleAtFixedRate(new RedisClearTask(hook), 1, 1, TimeUnit.DAYS);
     }
 
+    void loadCollectors() {
+        new RedisBungeeCollector(this.hook).register();
+    }
+
     void start() {
         logger.info("Starting RedisBungee Brains By Limework.net");
         try {
             redisHookStart();
             printRedisBungeeNetworkStats();
             initRepeatableCleanTask();
+            loadCollectors();
             httpServer = new HTTPServer("localhost", 8000);
+
         } catch (Throwable e) {
             shutdown(e);
             return;
