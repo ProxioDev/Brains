@@ -41,6 +41,19 @@ public class Brains {
         hook.logInfo("==========[ RedisBungee Stats ]==========");
     }
 
+    void printRedisBungeeProxies() {
+        hook.logInfo("==========[ RedisBungee Proxies ]==========");
+        hook.logInfo("Online proxies:" + hook.getProxiesIds().size());
+        int x = 1;
+        for (String proxyId : hook.getProxiesIds()) {
+            hook.logInfo(x + ". " +  proxyId + ": online : " + hook.getPlayersOnProxy(proxyId).size());
+            x++;
+        }
+
+        hook.logInfo("==========[ RedisBungee Proxies ]==========");
+    }
+
+
     void initRepeatableCleanTask() {
         // RIGHT NOW hard code the time/timeunit.
         scheduledExecutorService.scheduleAtFixedRate(new RedisClearTask(hook), 1, 1, TimeUnit.DAYS);
@@ -103,6 +116,8 @@ public class Brains {
             logger.info("1. \"help\": prints this page");
             logger.info("2. \"shutdown\", \"stop\": shutdown Brains.");
             logger.info("3, \"forcecleanuuid\": forces the uuid clean up. node it wont reset the timer.");
+            logger.info("4, \"stats\": shows the network stats");
+            logger.info("5, \"proxies\": shows the network proxies and the players");
         }
 
         private final List<String> shutdownArgs = Arrays.asList("shutdown", "stop");
@@ -119,6 +134,11 @@ public class Brains {
                     break;
                 } else if (args[0].equalsIgnoreCase("forcecleanuuid")) {
                     new RedisClearTask(brains.hook).execute();
+                } else if (args[0].equalsIgnoreCase("stats")) {
+                    brains.printRedisBungeeNetworkStats();
+                }
+                else if (args[0].equalsIgnoreCase("proxies")) {
+                    brains.printRedisBungeeProxies();
                 } else {
                     logger.info("Unknown command, type \"help\" for the help page.");
                 }
