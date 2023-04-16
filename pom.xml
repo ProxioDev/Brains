@@ -4,7 +4,7 @@
 
     <groupId>net.limework</groupId>
     <artifactId>RedisBungee-Brains</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <repositories>
         <repository>
             <id>jitpack.io</id>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>com.github.ProxioDev.redisbungee</groupId>
             <artifactId>RedisBungee-API</artifactId>
-            <version>ddfc689c2d</version>
+            <version>0.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
